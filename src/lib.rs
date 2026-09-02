@@ -97,7 +97,6 @@ fn artifact_for_platform() -> Result<(String, String, DownloadedFileType), Strin
 // server startup will report the expected hash and the user can set the
 // `eula_hash` setting to the correct value — the README documents this
 // bootstrap path.  Re-verify identity on each version bump.
-#[allow(dead_code)]
 const SERVER_EULA_HASH: &str = "34d850193ee04897";
 
 /// Executable names the server ships under, per platform.
@@ -236,6 +235,18 @@ fn server_launch_env(settings: &IntellijServerSettings) -> Vec<(String, String)>
     }
 
     env
+}
+
+/// Returns the command-line arguments required to start the server. The EULA
+/// is checked by recent server builds before the LSP initialize request, so
+/// the accepted hash must be supplied on the command line as well as in the
+/// initialization options.
+fn server_launch_args(eula_hash: &str) -> Vec<String> {
+    vec![
+        "--stdio".to_string(),
+        "--eula".to_string(),
+        eula_hash.to_string(),
+    ]
 }
 
 struct IntelliJLspExtension {
@@ -428,11 +439,11 @@ impl IntelliJLspExtension {
     }
 
     /// Resolves the EULA acceptance hash to send to the server: an explicit
-    /// user override, or the hash computed from the EULA.txt bundled with the
-    /// installed server.
-    fn eula_hash_for(&self, settings: &IntellijServerSettings) -> Option<String> {
+    /// user override, the hash computed from the EULA.txt bundled with the
+    /// installed server, or the pinned `SERVER_EULA_HASH` as a fallback.
+    fn eula_hash_for(&self, settings: &IntellijServerSettings) -> String {
         if let Some(hash) = &settings.eula_hash {
-            return Some(hash.clone());
+            return hash.clone();
         }
         // Compute from the EULA.txt shipped with the installed server.
         // This auto-adapts to whatever version was downloaded — no pin drift.
@@ -444,8 +455,12 @@ impl IntelliJLspExtension {
             .map(|server_root| server_root.join("EULA.txt"))
             .filter(|path| path.is_file())
             .or_else(find_bundled_eula);
-        let data = fs::read(eula_path?).ok()?;
-        Some(sha256_prefix_16(&data))
+        if let Some(path) = eula_path {
+            if let Ok(data) = fs::read(path) {
+                return sha256_prefix_16(&data);
+            }
+        }
+        SERVER_EULA_HASH.to_string()
     }
 }
 
@@ -473,10 +488,11 @@ impl Extension for IntelliJLspExtension {
         }
 
         let binary_path = self.language_server_binary_path(language_server_id, &settings)?;
+        let eula_hash = self.eula_hash_for(&settings);
         let env = server_launch_env(&settings);
         Ok(Command {
             command: binary_path,
-            args: vec!["--stdio".to_string()],
+            args: server_launch_args(&eula_hash),
             env,
         })
     }
@@ -720,5 +736,13 @@ mod tests {
             .any(|(k, v)| k == "IJ_JAVA_OPTIONS" && v == "-Xmx4g"));
         assert!(env.iter().any(|(k, v)| k == "INTELLIJ_REGION" && v == "EU"));
         assert!(!env.iter().any(|(k, _)| k == "INTELLIJ_DATA_SHARING"));
+    }
+
+    #[test]
+    fn test_launch_args_include_eula_hash() {
+        assert_eq!(
+            server_launch_args(SERVER_EULA_HASH),
+            vec!["--stdio", "--eula", SERVER_EULA_HASH]
+        );
     }
 }
