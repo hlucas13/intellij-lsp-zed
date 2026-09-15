@@ -1,6 +1,6 @@
 id = "intellij-lsp"
 name = "IntelliJ LSP"
-version = "0.2.1"
+version = "0.2.2"
 schema_version = 1
 description = "IntelliJ IDEA LSP server for Java and Kotlin — requires accepting the JetBrains EULA in settings"
 repository = "https://github.com/hlucas13/intellij-lsp-zed"

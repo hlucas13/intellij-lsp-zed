@@ -1,35 +1,35 @@
 {
-  "version": "263.3533.0",
-  "vsix_version": "0.0.10",
+  "version": "263.4702.0",
+  "vsix_version": "0.0.12",
   "platforms": {
     "mac-x86_64": {
-      "url": "https://download.jetbrains.com/language-server/intellij-server/263.3533.0/intellij-server-263.3533.0.sit",
-      "sha256": "e9e70c67a6da7351d4cd9e73c992a81425b261cbc55401f68a0a8f0d750e6268",
+      "url": "https://download.jetbrains.com/language-server/intellij-server/263.4702.0/intellij-server-263.4702.0.sit",
+      "sha256": "978cc7aacb6896e36513013215919d947a994edfbb4ad15e0c1cafef48730057",
       "file_type": "zip"
     },
     "mac-aarch64": {
-      "url": "https://download.jetbrains.com/language-server/intellij-server/263.3533.0/intellij-server-263.3533.0-aarch64.sit",
-      "sha256": "04cecd4fd04bc42ca957e006367d5a42ca2de6b72e5f5149470cc5c701146da4",
+      "url": "https://download.jetbrains.com/language-server/intellij-server/263.4702.0/intellij-server-263.4702.0-aarch64.sit",
+      "sha256": "117a914cbd1c3b8e2d0808429d9a85106ba78d10af34adb34f9daa927e13fbfb",
       "file_type": "zip"
     },
     "linux-x86_64": {
-      "url": "https://download.jetbrains.com/language-server/intellij-server/263.3533.0/intellij-server-263.3533.0.tar.gz",
-      "sha256": "caa4d121236ce5c8904695a87be375a68fada9b9ca4231450773f9fd9d78c3c3",
+      "url": "https://download.jetbrains.com/language-server/intellij-server/263.4702.0/intellij-server-263.4702.0.tar.gz",
+      "sha256": "8fa7964736d42e44952d1fea7a5478a3bc6e80e271039ee62a6db6c40fe95970",
       "file_type": "gzip-tar"
     },
     "linux-aarch64": {
-      "url": "https://download.jetbrains.com/language-server/intellij-server/263.3533.0/intellij-server-263.3533.0-aarch64.tar.gz",
-      "sha256": "38947d29fd8e7589f8fbd5794b2e580d40837cde8e60ca0e20b2cb210ea8076e",
+      "url": "https://download.jetbrains.com/language-server/intellij-server/263.4702.0/intellij-server-263.4702.0-aarch64.tar.gz",
+      "sha256": "6e92f58b60e9d9eec3c2fbcd64fd9641166497b8e94f053a5f4cc14ccef2220e",
       "file_type": "gzip-tar"
     },
     "windows-x86_64": {
-      "url": "https://download.jetbrains.com/language-server/intellij-server/263.3533.0/intellij-server-263.3533.0.win.zip",
-      "sha256": "8f36b07d90ea30df369d4c88ee26f750e3fa2eda45e7f8b77ffc0c43433803f4",
+      "url": "https://download.jetbrains.com/language-server/intellij-server/263.4702.0/intellij-server-263.4702.0.win.zip",
+      "sha256": "e69854033db9de8ea132ef4a8451d33f34abc3d1b90778587fc6040582b990da",
       "file_type": "zip"
     },
     "windows-aarch64": {
-      "url": "https://download.jetbrains.com/language-server/intellij-server/263.3533.0/intellij-server-263.3533.0-aarch64.win.zip",
-      "sha256": "4555e416965b1f05bf8e831e692977d4b79d37224ce82ea8900decb670fbd5e8",
+      "url": "https://download.jetbrains.com/language-server/intellij-server/263.4702.0/intellij-server-263.4702.0-aarch64.win.zip",
+      "sha256": "93724efd26bec14d890fc9dea223e17ebcb155f3c23d352e5bac22f7c9dc2d80",
       "file_type": "zip"
     }
   }
