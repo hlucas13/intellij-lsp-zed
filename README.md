@@ -99,10 +99,12 @@ JetBrains VS Code extension does).
 ## Advanced: JetBrains server settings
 
 JetBrains' own VS Code extension delivers settings to the language server via
-**initialization options** (`eulaHash`, `projects`, `buildTools`, `defaultSdk`)
-and **environment variables** (`IJ_JAVA_OPTIONS`, `INTELLIJ_DATA_SHARING`,
-`INTELLIJ_REGION`). This extension mirrors that behaviour 1:1 using the same
-setting keys (dots included).
+**initialization options** (`projects`, `buildTools`, `defaultSdk`) and
+**environment variables** (`IJ_JAVA_OPTIONS`, `INTELLIJ_DATA_SHARING`,
+`INTELLIJ_REGION`). The EULA acceptance hash is different: the server verifies
+it at launch, before the LSP handshake, so this extension passes it on the
+command line as `--eula=<hash>`. This extension mirrors that behaviour 1:1
+using the same setting keys (dots included).
 
 ### Full example
 
@@ -212,9 +214,11 @@ The `!` prefix disables the built-in server for that language.
    time and kept up-to-date by a biweekly CI workflow (see [Auto-update](#auto-update)).
 
 5. The EULA acceptance hash is computed from the bundled `EULA.txt` and passed
-   to the server on startup via initialization options. JetBrains settings
-   (`intellij.projects`, `intellij.buildTool`, ...) are also forwarded to the
-   server at startup — matching the real VS Code extension's behaviour.
+   to the server as `--eula=<hash>` on startup — the server checks it before
+   the LSP handshake, so initialization options are too late. JetBrains
+   settings (`intellij.projects`, `intellij.buildTool`, ...) are forwarded to
+   the server in initialization options — matching the real VS Code
+   extension's behaviour.
 
 6. Your project imports (Maven/Gradle/Bazel) and language features activate.
 
@@ -283,7 +287,7 @@ is a completely separate decision from EULA acceptance.
 | Problem                                       | Fix                                                                                                                                                                                                                     |
 | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | "you must read and accept the JetBrains EULA" | Add `"accept_jetbrains_eula": true` under `lsp.intellij-server.settings` (see [Install](#install)) and reload the window.                                                                                               |
-| "Bundled license agreement is not accepted"   | The server reports the hash it expects (e.g. `expected hash 34d850193ee04897`). If you run the server from a manual `server_path`, copy that hash into the `eula_hash` setting. Automatic downloads compute it for you. |
+| "Bundled license agreement is not accepted"   | The server reports the hash it expects (e.g. `expected hash cd82e6cdaf2790f1`). If you run the server from a manual `server_path`, copy that hash into the `eula_hash` setting. Automatic downloads compute it for you. |
 | Server won't start / evaluation expired       | Clear the server cache: `rm -rf ~/Library/Application\ Support/Zed/extensions/work/intellij-lsp-zed` (Linux: `~/.local/share/zed/extensions/work/`, Windows: `%LOCALAPPDATA%\Zed\extensions\work\`), then reload Zed    |
 | Download fails                                | Check your internet connection, then retry — the extension resumes cleanly                                                                                                                                              |
 | Duplicate diagnostics                         | Add the `language_servers` config above to disable Zed's built-ins                                                                                                                                                      |
