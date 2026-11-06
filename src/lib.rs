@@ -90,16 +90,6 @@ fn artifact_for_platform() -> Result<(String, String, DownloadedFileType), Strin
     Ok((data.version.clone(), entry.url.clone(), file_type))
 }
 
-// The EULA hash must match the one the real extension computes from the
-// `LICENSE.txt` inside the vsix wrapper.  That file and the `EULA.txt` shipped
-// inside the server archive are byte-for-byte identical for v263.2689.0
-// (verified with `diff` + shasum).  If a future build ever diverges, the
-// server startup will report the expected hash and the user can set the
-// `eula_hash` setting to the correct value — the README documents this
-// bootstrap path.  Re-verify identity on each version bump.
-#[allow(dead_code)]
-const SERVER_EULA_HASH: &str = "34d850193ee04897";
-
 /// Executable names the server ships under, per platform.
 const SERVER_BINARIES: [&str; 2] = ["intellij-server", "intellij-server.exe"];
 
@@ -240,6 +230,19 @@ fn server_launch_env(settings: &IntellijServerSettings) -> Vec<(String, String)>
 
 struct IntelliJLspExtension {
     cached_binary_path: Option<String>,
+}
+
+/// Command line for the server process.
+///
+/// The accepted-EULA hash must be passed here rather than in initialization
+/// options: the server validates it at launch and exits before the LSP
+/// handshake when it is missing.
+fn server_args(eula_hash: Option<&str>) -> Vec<String> {
+    let mut args = vec!["--stdio".to_string()];
+    if let Some(hash) = eula_hash {
+        args.push(format!("--eula={hash}"));
+    }
+    args
 }
 
 fn is_server_binary(file_name: &str) -> bool {
@@ -474,9 +477,16 @@ impl Extension for IntelliJLspExtension {
 
         let binary_path = self.language_server_binary_path(language_server_id, &settings)?;
         let env = server_launch_env(&settings);
+
+        // The server validates the accepted-EULA hash at launch, before the
+        // LSP handshake, so it must arrive on the command line. Passing it in
+        // initialization options is too late: the server exits with
+        // "Server reset the connection" before `initialize` is read.
+        let args = server_args(self.eula_hash_for(&settings).as_deref());
+
         Ok(Command {
             command: binary_path,
-            args: vec!["--stdio".to_string()],
+            args,
             env,
         })
     }
@@ -491,9 +501,10 @@ impl Extension for IntelliJLspExtension {
             return Err(EULA_GATE_MESSAGE.to_string());
         }
 
-        let mut init = serde_json::json!({
-            "eulaHash": self.eula_hash_for(&settings),
-        });
+        // The EULA hash is not sent here: the server checks it at launch and
+        // exits before `initialize` is read, so it travels on the command
+        // line instead (see `server_args`).
+        let mut init = serde_json::json!({});
 
         // Mirroring the real JetBrains VSCode extension's
         // `buildInitializationOptions`: forward projects, buildTools, and
@@ -565,6 +576,19 @@ mod tests {
     #[test]
     fn test_server_version_dir() {
         assert_eq!(server_version_dir("1.2.3"), "intellij-server-1.2.3");
+    }
+
+    #[test]
+    fn test_server_args_pass_eula_hash_on_command_line() {
+        assert_eq!(
+            server_args(Some("cd82e6cdaf2790f1")),
+            vec!["--stdio".to_string(), "--eula=cd82e6cdaf2790f1".to_string()]
+        );
+    }
+
+    #[test]
+    fn test_server_args_without_eula_hash() {
+        assert_eq!(server_args(None), vec!["--stdio".to_string()]);
     }
 
     #[test]
